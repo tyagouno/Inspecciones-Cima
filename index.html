@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inspecciones CIMA</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0b4da2">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f8; color: #333; }
+    header { background: #0b4da2; color: white; padding: 15px; text-align: center; font-weight: bold; }
+    .container { padding: 15px; max-width: 800px; margin: auto; }
+    .card { background: white; padding: 20px; margin-bottom: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    h3 { margin-top: 0; color: #0b4da2; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+    label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px; }
+    input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+    .check-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    .check-item label { margin-top: 0; flex: 1; }
+    .check-item select { width: 120px; }
+    .btn { background: #0b4da2; color: white; padding: 15px; border: none; border-radius: 8px; width: 100%; margin-top: 20px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+    .btn:hover { background: #093b7d; }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>INSPECCIONES CIMA</h2>
+  </header>
+  <div class="container">
+    <div class="card">
+      <h3>Datos del equipo</h3>
+      <label>Empresa</label>
+      <input id="empresa" placeholder="Nombre de la empresa" />
+      
+      <label>Fecha</label>
+      <input type="date" id="fecha" />
+
+      <label>Inspector</label>
+      <input id="inspector" placeholder="Nombre del inspector" />
+
+      <label>Tipo de equipo</label>
+      <input id="tipo" placeholder="Ej: Excavadora, Camión" />
+
+      <div style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+          <label>Marca</label>
+          <input id="marca" />
+        </div>
+        <div style="flex: 1;">
+          <label>Modelo</label>
+          <input id="modelo" />
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+          <label>N° Interno</label>
+          <input id="interno" />
+        </div>
+        <div style="flex: 1;">
+          <label>Horómetro</label>
+          <input id="horometro" type="number" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Checklist de Seguridad</h3>
+      <div id="checklist"></div>
+    </div>
+
+    <div class="card">
+      <label>Observaciones generales</label>
+      <textarea id="observaciones" rows="4" placeholder="Escriba detalles adicionales aquí..."></textarea>
+    </div>
+
+    <button class="btn" onclick="guardarYGenerarPDF()">GUARDAR Y GENERAR PDF</button>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
+    const items = [
+      "Estado general", "Sistema hidráulico", "Frenos", "Dirección",
+      "Neumáticos u orugas", "Luces", "Alarma de retroceso",
+      "Elementos de seguridad", "Fugas", "Estructura", "Implementos"
+    ];
+
+    const checklistDiv = document.getElementById("checklist");
+    items.forEach((item, index) => {
+      const div = document.createElement("div");
+      div.className = "check-item";
+      div.innerHTML = `
+        <label>${item}</label>
+        <select id="item${index}">
+          <option value="APTO">Apto</option>
+          <option value="NO APTO">No apto</option>
+        </select>
+      `;
+      checklistDiv.appendChild(div);
+    });
+
+    async function guardarYGenerarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      const data = {
+        empresa: document.getElementById("empresa").value,
+        fecha: document.getElementById("fecha").value,
+        inspector: document.getElementById("inspector").value,
+        tipo: document.getElementById("tipo").value,
+        marca: document.getElementById("marca").value,
+        modelo: document.getElementById("modelo").value,
+        interno: document.getElementById("interno").value,
+        horometro: document.getElementById("horometro").value,
+        observaciones: document.getElementById("observaciones").value,
+        checklist: []
+      };
+
+      let resultadoFinal = "APTO";
+      items.forEach((item, index) => {
+        const valor = document.getElementById("item" + index).value;
+        data.checklist.push({ item, valor });
+        if (valor === "NO APTO") resultadoFinal = "NO APTO";
+      });
+
+      // Guardar en LocalStorage
+      let registros = JSON.parse(localStorage.getItem("cima_registros") || "[]");
+      registros.push(data);
+      localStorage.setItem("cima_registros", JSON.stringify(registros));
+
+      // --- Diseño del PDF ---
+      doc.setFillColor(11, 77, 162);
+      doc.rect(0, 0, 210, 40, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(20);
+      doc.text("INFORME DE INSPECCIÓN CIMA", 20, 25);
+      
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(11);
+      let y = 55;
+      doc.setFont("helvetica", "bold");
+      doc.text(`Empresa: ${data.empresa}`, 20, y);
+      doc.text(`Fecha: ${data.fecha}`, 140, y);
+      y += 10;
+      doc.setFont("helvetica", "normal");
+      doc.text(`Inspector: ${data.inspector}`, 20, y);
+      y += 10;
+      doc.text(`Equipo: ${data.tipo} (${data.marca} ${data.modelo})`, 20, y);
+      y += 10;
+      doc.text(`ID Interno: ${data.interno}`, 20, y);
+      doc.text(`Horómetro: ${data.horometro}`, 140, y);
+
+      y += 20;
+      doc.setFont("helvetica", "bold");
+      doc.setFillColor(240, 240, 240);
+      doc.rect(20, y - 7, 170, 10, 'F');
+      doc.text("ÍTEM", 25, y);
+      doc.text("ESTADO", 160, y);
+      
+      doc.setFont("helvetica", "normal");
+      data.checklist.forEach(c => {
+        y += 10;
+        doc.text(c.item, 25, y);
+        if(c.valor === "NO APTO") doc.setTextColor(200, 0, 0);
+        else doc.setTextColor(0, 120, 0);
+        doc.text(c.valor, 160, y);
+        doc.setTextColor(0, 0, 0);
+        doc.setDrawColor(230);
+        doc.line(20, y + 2, 190, y + 2);
+      });
+
+      y += 20;
+      doc.setFontSize(14);
+      doc.text("RESULTADO FINAL: ", 20, y);
+      if(resultadoFinal === "APTO") doc.setTextColor(0, 120, 0);
+      else doc.setTextColor(200, 0, 0);
+      doc.text(resultadoFinal, 70, y);
+
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(10);
+      y += 15;
+      doc.text("Observaciones:", 20, y);
+      doc.setFont("helvetica", "italic");
+      doc.text(data.observaciones || "Sin observaciones.", 20, y + 7, { maxWidth: 170 });
+
+      doc.save(`CIMA_${data.interno}_${data.fecha}.pdf`);
+    }
+  </script>
+</body>
+</html>

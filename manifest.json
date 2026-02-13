@@ -1,0 +1,20 @@
+{
+  "name": "Inspecciones CIMA",
+  "short_name": "CIMA",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#0b4da2",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192/0b4da2/ffffff?text=CIMA",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512/0b4da2/ffffff?text=CIMA",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
