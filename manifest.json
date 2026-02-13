@@ -1,7 +1,7 @@
 {
   "name": "Inspecciones CIMA",
   "short_name": "CIMA",
-  "description": "Sistema de inspección de equipos CIMA",
+  "description": "App de Inspecciones de Equipos",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -11,13 +11,13 @@
       "src": "https://via.placeholder.com/192/0b4da2/ffffff?text=CIMA",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "https://via.placeholder.com/512/0b4da2/ffffff?text=CIMA",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
