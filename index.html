@@ -78,9 +78,12 @@
   </div>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
+    // Registrar service worker con la ruta correcta para GitHub
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(() => console.log("Service Worker registrado con éxito"))
+    .catch((err) => console.log("Error al registrar SW:", err));
+}
 
     const items = [
       "Estado general", "Sistema hidráulico", "Frenos", "Dirección",
@@ -190,4 +193,5 @@
     }
   </script>
 </body>
+
 </html>
